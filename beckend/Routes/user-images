@@ -1,0 +1,29 @@
+// Import necessary modules
+const express = require('express');
+const Image = require('../Model/Image'); // Make sure your Image model is correctly imported
+const verifyToken = require('../Middleware/verifyToken'); // Middleware to verify JWT token
+const path = require('path');
+
+
+const router = express.Router();
+
+// Route to fetch all images uploaded by the authenticated user
+router.get('/user-images', verifyToken, async (req, res) => {
+  try {
+    // Find all images where the user is the authenticated user
+    const images = await Image.find({ user: req.userId }); 
+
+    // Check if there are no images found
+    if (!images || images.length === 0) {
+      return res.status(404).json({ message: 'No images found' });
+    }
+
+    // Return the images found
+    res.status(200).json(images);
+  } catch (error) {
+    console.error('Error fetching user images:', error.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+module.exports = router;
