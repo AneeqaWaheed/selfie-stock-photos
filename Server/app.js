@@ -8,6 +8,8 @@ import passport from "passport";
 import "./config/facebook/passport.js"; // Import passport config
 import "./config/instagram/passport.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
+import imagesRoute from "./routes/imagesRoute.js";
+import profileRoute from "./routes/profileRoute.js";
 import paypal from "paypal-rest-sdk";
 import { initializePassport } from "./config/google/passport.js";
 // config env
@@ -47,6 +49,8 @@ paypal.configure({
 //routes
 app.use("/api/v1/auth", authroute);
 app.use("/api/payment", paymentRoutes);
+app.use("/api/images", imagesRoute);
+app.use("/api/profile", profileRoute);
 
 //rest api
 app.get("/", (req, res) => {

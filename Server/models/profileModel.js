@@ -1,5 +1,4 @@
-const mongoose = require("mongoose");
-
+import mongoose from "mongoose";
 // Define the Profile schema (for additional user info)
 const profileSchema = new mongoose.Schema({
   bio: { type: String, default: "" },
