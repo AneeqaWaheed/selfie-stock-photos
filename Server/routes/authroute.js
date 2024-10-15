@@ -12,6 +12,7 @@ import { requireSignIn } from "../middlewares/authMiddleware.js";
 import passport from "passport";
 import { facebookAuthCallback } from "../controllers/facebookAuthController.js";
 import { instagramCallback } from "../controllers/instagramAuthController.js";
+import { googleCallback } from "../controllers/googleController.js";
 //router object
 const router = express.Router();
 
@@ -76,5 +77,27 @@ router.get(
   passport.authenticate("instagram", { failureRedirect: "/login" }),
   instagramCallback // Call the controller for handling the response
 );
+
+// Google
+
+// Google OAuth Login Route
+router.get(
+  "/google",
+
+  passport.authenticate("google", { scope: ["profile", "email"] })
+);
+
+// Google OAuth Callback Route
+router.get(
+  "/google/callback",
+  passport.authenticate("google", { failureRedirect: "/" }),
+  googleCallback
+);
+
+// Dashboard Route (Protected)
+// router.get("/dashboard", dashboard);
+
+// Logout Route
+// router.get("/logout", logout);
 
 export default router;
