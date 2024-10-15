@@ -9,9 +9,12 @@ import "./config/facebook/passport.js"; // Import passport config
 import "./config/instagram/passport.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 import paypal from "paypal-rest-sdk";
+import { initializePassport } from "./config/google/passport.js";
 // config env
 dotenv.config();
+console.log("dmsfbsmdnfbsdm", process.env.GOOGLE_CLIENT_ID);
 
+console.log(process.env.GOOGLE_CLIENT_ID);
 //database config
 connectDB();
 
@@ -26,6 +29,7 @@ app.use(
   })
 );
 // Passport middleware
+initializePassport();
 app.use(passport.initialize());
 app.use(passport.session());
 
