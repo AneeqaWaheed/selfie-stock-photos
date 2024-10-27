@@ -4,19 +4,21 @@ import {
   getAllImages,
   getImageById,
   getUserImages,
+  searchImages,
   updateImageMetadata,
   uploadImage,
   verifyToken,
 } from "../controllers/ImageController.js";
 import multer from "multer";
 import path from "path";
+import { requireSignIn } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 // Set up multer for image uploads
 const storage = multer.diskStorage({
   destination: "./uploads/userPosts",
   filename: (req, file, cb) => {
-    cb(null, `${Date.now()}-${file.originalname}`);
+    cb(null, `${file.originalname}`);
   },
 });
 
@@ -43,14 +45,18 @@ router.get("/all-images", getAllImages);
 router.post("/upload", verifyToken, upload.single("image"), uploadImage);
 
 // Route to get all images uploaded by the user
-router.get("/user-images", verifyToken, getUserImages);
+router.get("/user-images", requireSignIn, getUserImages);
 
 // Route to get a specific image by ID
-router.get("/image/:id", verifyToken, getImageById);
+router.get("/image/:id", requireSignIn, getImageById);
 
 // Route to update image metadata (tags or downloads)
 router.put("/image/:id", verifyToken, updateImageMetadata);
 
 // Route to delete an image by ID
 router.delete("/image/:id", verifyToken, deleteImageById);
+
+// search images
+router.get("/search", searchImages);
+
 export default router;

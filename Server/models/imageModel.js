@@ -10,15 +10,15 @@ const ImageSchema = new mongoose.Schema({
   },
   width: {
     type: Number, // Width of the image
-    required: true,
   },
   height: {
     type: Number, // Height of the image
-    required: true,
   },
   tags: {
     type: String, // Optional tags to categorize images
   },
+  orientation: { type: String, enum: ["landscape", "portrait", "square"] }, // Add this field
+  size: { type: String, enum: ["small", "medium", "large"] }, // Add this field
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User", // Reference to the user who uploaded the image

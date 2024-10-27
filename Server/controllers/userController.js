@@ -1,4 +1,4 @@
-import UserModel from "../models/user.js";
+import UserModel from "../models/userModel.js";
 import jwt from "jsonwebtoken";
 import multer from "multer"; // For handling image uploads
 import path from "path";

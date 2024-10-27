@@ -17,10 +17,22 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: true,
+      // required: true,
     },
+    profileImage: { type: String },
+    username: { type: String, required: true, unique: true },
+    bio: { type: String },
+    oauthId: {
+      type: String,
+      unique: true, // Ensure this is unique
+      sparse: true, // Allow null values if necessary
+    },
+    provider: { type: String },
     resetPasswordToken: String,
     resetPasswordExpires: Date,
+    followers: { type: Number, default: 0 },
+    photos: { type: Number, default: 0 },
+    downloads: { type: Number, default: 0 },
   },
   { timestamps: true }
 );

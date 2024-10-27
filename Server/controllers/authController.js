@@ -7,7 +7,15 @@ import transport from "../config/nodemailer.js";
 //registration
 export const registerController = async (req, res) => {
   try {
-    const { first_name, last_name, email, password } = req.body;
+    const {
+      first_name,
+      last_name,
+      email,
+      password,
+      bio,
+      username,
+      profileImage,
+    } = req.body;
     if (!first_name) {
       return res.send({ message: "first_name is Required" });
     }
@@ -37,6 +45,12 @@ export const registerController = async (req, res) => {
       last_name,
       email,
       password: hashedPassword,
+      bio,
+      username,
+      profileImage,
+      followers: 0,
+      photos: 0,
+      downloads: 0,
     }).save();
     res.status(201).send({
       success: true,

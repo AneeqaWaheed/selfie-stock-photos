@@ -1,22 +1,20 @@
 import express from "express";
 import dotenv from "dotenv";
 import morgan from "morgan";
+import passport from "passport";
 import connectDB from "./config/db.js";
 import authroute from "./routes/authroute.js";
 import session from "express-session";
-import passport from "passport";
-import "./config/facebook/passport.js"; // Import passport config
-import "./config/instagram/passport.js";
+import "./config/passport.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 import imagesRoute from "./routes/imagesRoute.js";
 import profileRoute from "./routes/profileRoute.js";
 import paypal from "paypal-rest-sdk";
-import { initializePassport } from "./config/google/passport.js";
+// import { initializePassport } from "./config/google/passport.js";
+import cookieParser from "cookie-parser";
 // config env
 dotenv.config();
-console.log("dmsfbsmdnfbsdm", process.env.GOOGLE_CLIENT_ID);
 
-console.log(process.env.GOOGLE_CLIENT_ID);
 //database config
 connectDB();
 
@@ -30,14 +28,14 @@ app.use(
     saveUninitialized: true,
   })
 );
-// Passport middleware
-initializePassport();
+
 app.use(passport.initialize());
 app.use(passport.session());
 
-//middleware
 app.use(express.json());
 app.use(morgan("dev"));
+
+app.use(cookieParser());
 
 //paypal
 paypal.configure({

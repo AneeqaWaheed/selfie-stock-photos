@@ -9,10 +9,25 @@ import {
   resetPassword,
 } from "../controllers/authController.js";
 import { requireSignIn } from "../middlewares/authMiddleware.js";
-import passport from "passport";
-import { facebookAuthCallback } from "../controllers/facebookAuthController.js";
-import { instagramCallback } from "../controllers/instagramAuthController.js";
-import { googleCallback } from "../controllers/googleController.js";
+import passport from "../config/passport.js";
+import "../config/google/passport.js";
+import "../config/facebook/passport.js"; // Import passport config
+import "../config/instagram/passport.js";
+import "../config/twitter/passport.js";
+import { googleAuth, googleCallback } from "../controllers/googleController.js";
+import {
+  facebookAuth,
+  facebookCallback,
+} from "../controllers/facebookAuthController.js";
+import {
+  instagramAuth,
+  instagramCallback,
+} from "../controllers/instagramAuthController.js";
+import {
+  twitterAuth,
+  twitterCallback,
+} from "../controllers/twitterController.js";
+
 //router object
 const router = express.Router();
 
@@ -39,65 +54,20 @@ router.delete("/delUser/:id", delUser);
 router.post("/forgot-password", forgotPassword);
 router.post("/reset/:token", resetPassword);
 
-{
-  /* FACEBOOK*/
-}
+// Google Auth Routes
+router.get("/google", googleAuth); // Initiates Google authentication
+router.get("/google/callback", googleCallback); // Handles Google callback
 
-// Route to start Facebook login process
-router.get(
-  "/facebook",
-  passport.authenticate("facebook", { scope: ["email"] })
-);
+// Facebook Auth Routes
+router.get("/facebook", facebookAuth); // Initiates Facebook authentication
+router.get("/facebook/callback", facebookCallback); // Handles Facebook callback
 
-// Facebook callback route
-router.get(
-  "/facebook/callback",
-  passport.authenticate("facebook", {
-    failureRedirect: "/login",
-    session: false,
-  }),
-  facebookAuthCallback // Call the controller function here
-);
+// Instagram Auth Routes
+router.get("/instagram", instagramAuth); // Initiates Instagram authentication
+router.get("/instagram/callback", instagramCallback); // Handles Instagram callback
 
-// Log out route
-router.get("/logout", (req, res) => {
-  req.logout();
-  res.redirect("/");
-});
-
-{
-  /* INSTAGRAM*/
-}
-
-router.get("/instagram", passport.authenticate("instagram"));
-
-// Instagram Callback Route
-router.get(
-  "/instagram/callback",
-  passport.authenticate("instagram", { failureRedirect: "/login" }),
-  instagramCallback // Call the controller for handling the response
-);
-
-// Google
-
-// Google OAuth Login Route
-router.get(
-  "/google",
-
-  passport.authenticate("google", { scope: ["profile", "email"] })
-);
-
-// Google OAuth Callback Route
-router.get(
-  "/google/callback",
-  passport.authenticate("google", { failureRedirect: "/" }),
-  googleCallback
-);
-
-// Dashboard Route (Protected)
-// router.get("/dashboard", dashboard);
-
-// Logout Route
-// router.get("/logout", logout);
+// Twitter Auth Routes
+router.get("/twitter", twitterAuth); // Initiates Twitter authentication
+router.get("/twitter/callback", twitterCallback); // Handles Twitter callback
 
 export default router;

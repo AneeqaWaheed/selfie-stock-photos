@@ -1,30 +1,26 @@
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
+import User from "../../models/userModel.js";
+// // Initialize Passport with Google OAuth Strategy
 
-// Initialize Passport with Google OAuth Strategy
-export function initializePassport() {
-  passport.use(
-    new GoogleStrategy(
-      {
-        clientID: process.env.GOOGLE_CLIENT_ID,
-        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        callbackURL: process.env.GOOGLE_CALLBACK_URL,
-      },
-      (accessToken, refreshToken, profile, done) => {
-        console.log("Google profile:", profile);
-        // Handle user profile here (store in DB or session)
-        return done(null, profile);
-      }
-    )
-  );
+passport.use(
+  new GoogleStrategy(
+    {
+      clientID: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      callbackURL: "http://localhost:5000/api/v1/auth/google/callback",
+      scope: ["profile", "email"],
+    },
+    async (accessToken, refreshToken, profile, done) => {
+      console.log("Profile Data:", profile);
+      done(null, profile);
+    }
+  )
+);
 
-  // Serialize user into the session
-  passport.serializeUser((user, done) => {
-    done(null, user);
-  });
-
-  // Deserialize user from the session
-  passport.deserializeUser((user, done) => {
-    done(null, user);
-  });
-}
+// Serialize and deserialize user
+passport.serializeUser((user, done) => done(null, user._id));
+passport.deserializeUser(async (id, done) => {
+  const user = await User.findById(id);
+  done(null, user);
+});

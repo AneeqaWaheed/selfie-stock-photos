@@ -2,9 +2,13 @@ import passport from "passport";
 import User from "../models/userModel.js"; // Adjust path as necessary
 import JWT from "jsonwebtoken"; // Import JWT for token generation
 
-export const facebookAuth = (req, res, next) => {
+// export const twitterAuth = (req, res, next) => {
+//   passport.authenticate("twitter")(req, res, next);
+// };
+
+export const twitterAuth = (req, res, next) => {
   passport.authenticate(
-    "facebook",
+    "twitter",
     { scope: ["profile", "email"] },
     async (err, profile) => {
       if (err) return next(err);
@@ -53,7 +57,7 @@ export const facebookAuth = (req, res, next) => {
           },
         });
 
-        console.log("facebook Profile:", profile);
+        console.log("Google Profile:", profile);
         console.log("User found in DB:", user);
       } catch (error) {
         next(error);
@@ -62,8 +66,8 @@ export const facebookAuth = (req, res, next) => {
   )(req, res, next);
 };
 
-export const facebookCallback = async (req, res, next) => {
-  passport.authenticate("facebook", async (err, profile) => {
+export const twitterCallback = async (req, res, next) => {
+  passport.authenticate("twitter", async (err, profile) => {
     if (err) return next(err);
 
     try {
