@@ -2,8 +2,7 @@ import mongoose from "mongoose";
 
 const OrderSchema = new mongoose.Schema({
   image: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Image",
+    type: String,
     required: true,
   },
   user: {

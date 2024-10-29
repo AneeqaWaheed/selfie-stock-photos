@@ -103,7 +103,7 @@ export const uploadImage = async (req, res) => {
 
         const newImage = new Image({
           filename: originalname,
-          filePath: firebaseURL,
+          filePath: path,
           tags,
           orientation,
           size: sizeCategory,
@@ -121,12 +121,10 @@ export const uploadImage = async (req, res) => {
         });
       } catch (error) {
         console.error("Error while saving to DB:", error);
-        return res
-          .status(500)
-          .json({
-            message: "Failed to save image details",
-            error: error.message,
-          });
+        return res.status(500).json({
+          message: "Failed to save image details",
+          error: error.message,
+        });
       }
     });
 
