@@ -17,16 +17,25 @@ export const registerController = async (req, res) => {
       profileImage,
     } = req.body;
     if (!first_name) {
-      return res.send({ message: "first_name is Required" });
+      return res.status(400).json({
+        success: false,
+        message: "first_name is Required",
+      });
     }
     if (!last_name) {
-      return res.send({ message: "last_name is Required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "last_name is Required" });
     }
     if (!email) {
-      return res.send({ message: "email is Required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "email is Required" });
     }
     if (!password) {
-      return res.send({ message: "password is Required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "password is Required" });
     }
 
     //check user
@@ -48,7 +57,9 @@ export const registerController = async (req, res) => {
       bio,
       username,
       profileImage,
-      followers: 0,
+      // oauthId: null,
+      // followers: 0,
+      // following: 0,
       photos: 0,
       downloads: 0,
     }).save();
@@ -100,6 +111,7 @@ export const LoginController = async (req, res) => {
       user: {
         first_name: user.first_name,
         email: user.email,
+        username: user.username,
       },
       token,
     });
@@ -117,7 +129,8 @@ export const LoginController = async (req, res) => {
 
 export const updateProfileController = async (req, res) => {
   try {
-    const { first_name, last_name, email, password } = req.body;
+    const { first_name, last_name, email, password, profileImage, bio } =
+      req.body;
     const user = await userModel.findById(req.params.id);
 
     // Password
@@ -134,6 +147,8 @@ export const updateProfileController = async (req, res) => {
         last_name: last_name || user.last_name,
         email: email || user.email,
         password: hashedPassword || user.password,
+        profileImage: profileImage || user.profileImage,
+        bio: bio || user.bio,
       },
       { new: true }
     );

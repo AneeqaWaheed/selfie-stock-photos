@@ -1,77 +1,87 @@
 import UserModel from "../models/userModel.js";
-import jwt from "jsonwebtoken";
-import multer from "multer"; // For handling image uploads
+import admin from "firebase-admin";
+import multer from "multer";
 import path from "path";
+import serviceAccount from "../selfi-stock-firebase-adminsdk.json" assert { type: "json" };
 
-// Middleware to verify JWT and get user
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/"); // Save the profile images in the 'uploads' folder
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + path.extname(file.originalname)); // Ensure unique filenames
-  },
-});
+// // const serviceAccount = require("../path/to/serviceAccountKey.json");
+// admin.initializeApp({
+//   credential: admin.credential.cert(serviceAccount),
+//   storageBucket: "your-project-id.appspot.com",
+// });
 
-const upload = multer({ storage: storage });
-export const authenticateToken = (req, res, next) => {
-  const authHeader = req.headers["authorization"];
-  const token = authHeader && authHeader.split(" ")[1]; // Extract token from the header
+// Configure Multer for handling file uploads
+const storage = multer.memoryStorage(); // Use memory storage for buffer
+export const upload = multer({ storage });
 
-  if (!token) return res.status(401).json({ message: "No token provided" });
+// Firebase Storage Bucket
+const bucket = admin.storage().bucket();
 
-  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-    if (err) return res.status(403).json({ message: "Invalid token" });
-    req.user = user; // Attach user info to the request object
-    next();
-  });
+// Function to upload image to Firebase Storage
+export const uploadImageToFirebase = async (file) => {
+  try {
+    const bucket = admin.storage().bucket(); // Ensure you have the bucket initialized
+    const fileName = `profileImages/${file.originalname}`; // Path where the image will be stored
+    const fileRef = bucket.file(fileName);
+
+    // Upload the image to Firebase Storage
+    await fileRef.save(file.buffer, {
+      metadata: {
+        contentType: file.mimetype,
+      },
+      resumable: false, // You can set this to true for larger files
+    });
+
+    // Get the public download URL
+    const [url] = await fileRef.getSignedUrl({
+      action: "read",
+      expires: "03-01-2030", // Set an expiration date as needed
+    });
+
+    return url; // Return the download URL
+  } catch (error) {
+    console.error("Error uploading image to Firebase:", error);
+    throw new Error("Failed to upload image to Firebase"); // Throw an error to handle it in the calling function
+  }
 };
 
 // Fetch user profile
 export const getUserProfile = async (req, res) => {
   try {
-    // Find user by ID stored in the token
-    const user = await UserModel.findById(req.user.userId).select("-password");
+    const { username } = req.params;
+    const user = await UserModel.findOne({ username }).select(
+      "-password -resetPasswordToken -resetPasswordExpires"
+    );
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Respond with user profile details (excluding password)
-    res.json({
-      username: user.username, // Username
-      bio: user.bio, // User bio
-      profileImage: user.profileImage, // Profile image path or URL
-      followers: user.followers, // Followers count or details
-      downloads: user.downloads, // Downloads count or details
-    });
+    res.status(200).json(user);
   } catch (error) {
-    console.error("Error fetching profile:", error);
+    console.error("Error fetching user profile:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
-
-// Update user profile (with optional image upload)
+//update profile
 export const updateUserProfile = async (req, res) => {
   try {
     const { username, bio } = req.body;
-    const userId = req.user.userId; // User ID from the token
+    const userId = req.user.userId; // Extract user ID from the token
 
     // Prepare the update object
-    const updateData = {
-      username,
-      bio,
-    };
+    const updateData = { username, bio };
 
-    // If a new profile image is uploaded, add it to the update data
+    // If an image is uploaded, save it to Firebase and get the download URL
     if (req.file) {
-      updateData.profileImage = req.file.path; // Save the path of the uploaded image
+      const imageUrl = await uploadImageToFirebase(req.file);
+      updateData.profileImage = imageUrl; // Save the download URL
     }
 
-    // Find the user by ID and update the profile fields
+    // Find the user by ID and update their profile
     const updatedUser = await User.findByIdAndUpdate(userId, updateData, {
-      new: true,
-    }); // Return the updated user
+      new: true, // Return the updated user
+    });
 
     if (!updatedUser) {
       return res.status(404).json({ message: "User not found" });
@@ -79,6 +89,8 @@ export const updateUserProfile = async (req, res) => {
 
     // Respond with the updated user data
     res.json({
+      first_name: updatedUser.first_name,
+      last_name: updatedUser.last_name,
       username: updatedUser.username,
       bio: updatedUser.bio,
       profileImage: updatedUser.profileImage,

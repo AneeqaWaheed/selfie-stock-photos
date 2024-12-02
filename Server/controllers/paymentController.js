@@ -186,6 +186,9 @@ export const paymentSuccess = async (req, res) => {
               res.setHeader("Content-Type", "image/jpeg");
               res.send(transformedImage);
               console.log("Image downloaded successfully!");
+              await userModel.findByIdAndUpdate(req.userId, {
+                $inc: { downloads: 1 },
+              });
             });
 
             stream.end(buffer);
@@ -214,34 +217,33 @@ export const paymentCancel = (req, res) => {
 export const createCheckoutSession = async (req, res) => {
   try {
     const { filename, width, height } = req.query;
+    console.log("mfnkalhdskjakfhskd", filename, width, height);
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-    // Create a Stripe checkout session
-    const session = await stripe.checkout.sessions.create({
+    // Convert price to cents for Stripe
+    const amountInCents = 2500;
+
+    // Create a PaymentIntent
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: amountInCents, // Amount in cents
+      currency: "usd",
       payment_method_types: ["card"],
-      mode: "payment",
-      success_url: `http://localhost:5000/api/payment/checkout-success?filename=${filename}&width=${width}&height=${height}`,
-      cancel_url: `http://localhost:5000/api/payment/cancel`,
-      line_items: [
-        {
-          price_data: {
-            currency: "usd",
-            unit_amount: 2500,
-            product_data: {
-              name: "Image Download",
-              description: `Image with dimensions ${width}x${height}`,
-            },
-          },
-          quantity: 1,
-        },
-      ],
+      description: `Image with dimensions ${width}x${height}`,
+      metadata: {
+        filename,
+        width,
+        height,
+        name: req.body.name,
+        email: req.body.email,
+      },
+      setup_future_usage: "off_session",
     });
 
+    // Optionally, save order details in your database
     const orderData = {
       user: req.userId,
       dimensions: { width, height },
       price: 25,
-      session: session.id,
       paymentMethod: "card",
       image: filename,
     };
@@ -249,14 +251,15 @@ export const createCheckoutSession = async (req, res) => {
     const newOrder = new orderModel(orderData);
     await newOrder.save();
 
-    res
-      .status(200)
-      .json({ success: true, sessionId: session.id, url: session.url });
+    res.status(200).json({
+      success: true,
+      clientSecret: paymentIntent.client_secret, // Send client_secret to the mobile app
+    });
   } catch (error) {
-    console.error("Error creating checkout session:", error);
+    console.error("Error creating PaymentIntent:", error);
     res.status(500).json({
       success: false,
-      message: "Error creating checkout session",
+      message: "Error creating PaymentIntent",
       error: error.message,
     });
   }
@@ -305,12 +308,17 @@ export const downloadImageAfterPayment = async (req, res) => {
     stream.on("finish", async () => {
       await file.makePublic();
       const firebaseURL = `https://storage.googleapis.com/${bucket.name}/${file.name}`;
-
-      res.setHeader("Content-Type", "image/jpeg");
-      res.send(transformedImage);
+      res.status(200).json({
+        message: "Image processed successfully",
+        firebaseURL,
+      });
+      // res.setHeader("Content-Type", "image/jpeg");
+      // res.send(transformedImage);
       console.log("Image downloaded and uploaded to Firebase:", firebaseURL);
     });
-
+    await userModel.findByIdAndUpdate(req.userId, {
+      $inc: { downloads: 1 },
+    });
     stream.end(buffer);
   } catch (error) {
     console.error("Error downloading image:", error);
@@ -320,177 +328,3 @@ export const downloadImageAfterPayment = async (req, res) => {
     });
   }
 };
-
-// export const downloadImage = async (req, res) => {
-//   try {
-//     // Extract required data from request body
-//     const { filename, width, height } = req.query;
-
-//     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-
-//     // Prepare Stripe checkout session
-//     const session = await stripe.checkout.sessions.create({
-//       payment_method_types: ["card"],
-//       mode: "payment",
-//       success_url: `http://localhost:5000/api/payment/checkout-success`,
-//       cancel_url: `http://localhost:5000/api/payment/cancel`,
-//       line_items: [
-//         {
-//           price_data: {
-//             currency: "usd",
-//             unit_amount: 2500,
-//             product_data: {
-//               name: "Image Download", // Product name
-//               description: `Image with dimensions ${width}x${height}`,
-//             },
-//           },
-//           quantity: 1,
-//         },
-//       ],
-//     });
-
-//     // Create order data
-//     const orderData = {
-//       user: req.userId, // User ID from token
-//       dimensions: { width, height },
-//       price: 25,
-//       session: session.id,
-//       paymentMethod: "card",
-//       image: filename,
-//     };
-
-//     // Save order in the database
-//     const newOrder = new orderModel(orderData);
-//     await newOrder.save();
-
-//     // Construct local file path for the image
-//     const localFilePath = path.join(
-//       __dirname,
-//       "..",
-//       "uploads",
-//       "userPosts",
-//       filename
-//     );
-//     console.log(`Looking for image at: ${localFilePath}`);
-
-//     // Verify if the image exists
-//     if (!fs.existsSync(localFilePath)) {
-//       console.error(`File not found at: ${localFilePath}`);
-//       if (!res.headersSent) {
-//         return res
-//           .status(404)
-//           .json({ message: "Image not found in local storage" });
-//       }
-//       return;
-//     }
-
-//     // Read the image from local storage
-//     const readStream = fs.createReadStream(localFilePath);
-//     const chunks = [];
-
-//     readStream.on("data", (chunk) => {
-//       chunks.push(chunk);
-//     });
-
-//     readStream.on("error", (error) => {
-//       console.error("Stream reading error:", error);
-//       if (!res.headersSent) {
-//         return res.status(500).json({
-//           message: "Error reading image stream",
-//           error: error.message,
-//         });
-//       }
-//     });
-
-//     readStream.on("end", async () => {
-//       if (chunks.length === 0) {
-//         console.error("No data received from stream");
-//         if (!res.headersSent) {
-//           return res.status(500).json({ message: "Input buffer is empty" });
-//         }
-//         return;
-//       }
-
-//       const buffer = Buffer.concat(chunks);
-
-//       try {
-//         const firebaseFileName = `${filename}`;
-//         const file = bucket.file(`uploads/userPosts/${firebaseFileName}`);
-//         const stream = file.createWriteStream({
-//           metadata: { contentType: "image/jpeg" },
-//         });
-
-//         stream.on("error", (error) => {
-//           console.error("Upload error:", error);
-//           if (!res.headersSent) {
-//             return res
-//               .status(500)
-//               .json({ message: "Image upload failed", error });
-//           }
-//         });
-
-//         stream.on("finish", async () => {
-//           try {
-//             await file.makePublic();
-//             const firebaseURL = `https://storage.googleapis.com/${bucket.name}/${file.name}`;
-
-//             let transformer = Sharp(buffer).toFormat("jpeg");
-//             if (width && height) {
-//               const parsedWidth = parseInt(width, 10);
-//               const parsedHeight = parseInt(height, 10);
-
-//               if (isNaN(parsedWidth) || isNaN(parsedHeight)) {
-//                 if (!res.headersSent) {
-//                   return res.status(400).json({
-//                     message: "Width and height must be valid numbers",
-//                   });
-//                 }
-//               }
-//               transformer = transformer.resize(parsedWidth, parsedHeight);
-//             }
-
-//             const transformedImage = await transformer.toBuffer();
-//             if (!res.headersSent) {
-//               res.setHeader("Content-Type", "image/jpeg");
-//               res.send(transformedImage);
-//               console.log("image downloaded");
-//             }
-//           } catch (error) {
-//             console.error("Image processing error:", error);
-//             if (!res.headersSent) {
-//               return res.status(500).json({
-//                 message: "Error processing image",
-//                 error: error.message,
-//               });
-//             }
-//           }
-//         });
-
-//         stream.end(buffer);
-//       } catch (error) {
-//         console.error("Image processing error:", error);
-//         if (!res.headersSent) {
-//           return res
-//             .status(500)
-//             .json({ message: "Error processing image", error: error.message });
-//         }
-//       }
-//     });
-
-//     // Respond with successful checkout session creation
-//     if (!res.headersSent) {
-//       return res
-//         .status(200)
-//         .json({ success: true, message: "Successfully paid", session });
-//     }
-//   } catch (error) {
-//     console.error("Error creating checkout session:", error);
-//     if (!res.headersSent) {
-//       return res.status(500).json({
-//         success: false,
-//         message: "Error creating checkout session",
-//         error: error.message,
-//       });
-//     }
-//   }
-// };

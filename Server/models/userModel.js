@@ -30,7 +30,20 @@ const userSchema = new mongoose.Schema(
     provider: { type: String },
     resetPasswordToken: String,
     resetPasswordExpires: Date,
-    followers: { type: Number, default: 0 },
+    followers: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        default: [],
+      },
+    ],
+    following: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        default: [],
+      },
+    ],
     photos: { type: Number, default: 0 },
     downloads: { type: Number, default: 0 },
   },

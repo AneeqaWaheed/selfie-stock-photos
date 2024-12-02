@@ -1,5 +1,5 @@
 import express from "express";
-import { handlePurchase } from "../controllers/notificationController";
+import { handlePurchase } from "../controllers/notificationController.js";
 import {
   confirmDownloadAndProcessImage,
   purchaseImage,

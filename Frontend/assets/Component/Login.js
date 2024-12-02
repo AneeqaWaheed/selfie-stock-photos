@@ -1,38 +1,44 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { 
-  View, 
-  Text, 
-  TextInput, 
-  TouchableOpacity, 
-  StyleSheet, 
-  Animated, 
-  ImageBackground, 
-  Image, 
-  Alert, 
-  KeyboardAvoidingView, 
-  Platform, 
-  ScrollView, 
-  Keyboard 
-} from 'react-native';
-import { FontAwesome } from '@expo/vector-icons'; // For social icons
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { useEffect, useRef, useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Animated,
+  ImageBackground,
+  Image,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Keyboard,
+} from "react-native";
+import { FontAwesome } from "@expo/vector-icons"; // For social icons
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const LoginScreen = ({ navigation }) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [keyboardVisible, setKeyboardVisible] = useState(false); // Track keyboard visibility
 
   const opacityAnim = useRef(new Animated.Value(1)).current; // For the woman image fade-out
-  const formAnim = useRef(new Animated.Value(0)).current;    // For the login form fade-in
+  const formAnim = useRef(new Animated.Value(0)).current; // For the login form fade-in
 
   useEffect(() => {
     // Keyboard listeners
-    const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => {
-      setKeyboardVisible(true);
-    });
-    const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
-      setKeyboardVisible(false);
-    });
+    const keyboardDidShowListener = Keyboard.addListener(
+      "keyboardDidShow",
+      () => {
+        setKeyboardVisible(true);
+      }
+    );
+    const keyboardDidHideListener = Keyboard.addListener(
+      "keyboardDidHide",
+      () => {
+        setKeyboardVisible(false);
+      }
+    );
 
     // Fade animation after 3 seconds
     setTimeout(() => {
@@ -60,51 +66,63 @@ const LoginScreen = ({ navigation }) => {
   // Handle login request to backend
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert('Please enter both email and password');
+      Alert.alert("Please enter both email and password");
       return;
     }
 
     try {
-      const response = await fetch('http://192.168.100.186:5000/api/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }), // Sending email and password to backend
-      });
-
-      const textResponse = await response.text(); // Get the raw response as text
-      console.log('Raw response:', textResponse); // Log the raw response for debugging
-
-      const data = JSON.parse(textResponse); // Parse JSON manually
+      const response = await fetch(
+        `https://8505-103-248-222-152.ngrok-free.app/api/v1/auth/login`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email, password }), // Sending email and password to backend
+        }
+      );
+      // console.log("sandbmasn", response);
+      const data = await response.json(); // Parse JSON response directly
 
       if (response.status === 200) {
         // Store the token in AsyncStorage
-        await AsyncStorage.setItem('token', data.token);
-        console.log('Token stored:', data.token); // Debug log
+        await AsyncStorage.setItem("token", data.token);
 
-        Alert.alert('Login Successful');
-        // Navigate to HomeScreen (you can call it 'Dashboard' or any other name)
-        navigation.navigate('Homelist'); 
+        // Store username only if it exists in the "user" object
+        if (data.user && data.user.username) {
+          await AsyncStorage.setItem("username", data.user.username);
+          console.log("Username stored:", data.user.username); // Debug log
+        }
+
+        Alert.alert("Login Successful");
+        navigation.navigate("Homelist");
       } else {
-        Alert.alert('Login Failed', data.error || 'Invalid credentials');
+        Alert.alert("Login Failed", data.message || "Invalid credentials");
       }
     } catch (error) {
-      Alert.alert('Error logging in', error.message);
+      console.log("error in logging in", error);
+      Alert.alert("Error logging in", error);
     }
   };
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={styles.keyboardAvoidingView}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 0}
     >
-      <ScrollView contentContainerStyle={[styles.container, keyboardVisible && { marginTop: -50 }]}>
+      <ScrollView
+        contentContainerStyle={[
+          styles.container,
+          keyboardVisible && { marginTop: -50 },
+        ]}
+      >
         {/* Woman Image (Splash screen) */}
-        <Animated.View style={[styles.imageContainer, { opacity: opacityAnim }]}>
+        <Animated.View
+          style={[styles.imageContainer, { opacity: opacityAnim }]}
+        >
           <ImageBackground
-            source={require('../../assets/Images/main.png')}  // Replace with your woman image path
+            source={require("../../assets/Images/main.png")} // Replace with your woman image path
             style={styles.womanImage}
             resizeMode="cover"
           />
@@ -112,19 +130,20 @@ const LoginScreen = ({ navigation }) => {
 
         {/* Original Login Form */}
         <Animated.View style={[styles.formContainer, { opacity: formAnim }]}>
-          
           {/* Separate container for the blue gradient image */}
           <View style={styles.blueGradientContainer}>
             <ImageBackground
-              source={require('../../assets/Images/login2S.png')}  // Blue gradient background
+              source={require("../../assets/Images/login2S.png")} // Blue gradient background
               style={styles.blueGradientImage}
               resizeMode="cover"
             >
               <View style={styles.p1Content}>
-                <Text style={styles.sloganText}>You take extraordinary photos,{"\n"}why not sell them?</Text>
+                <Text style={styles.sloganText}>
+                  You take extraordinary photos,{"\n"}why not sell them?
+                </Text>
 
-                <Image 
-                  source={require('../../assets/Images/logoimg.png')}  // Replace with your actual logo image
+                <Image
+                  source={require("../../assets/Images/logoimg.png")} // Replace with your actual logo image
                   style={styles.logoImage}
                   resizeMode="contain"
                 />
@@ -135,9 +154,9 @@ const LoginScreen = ({ navigation }) => {
           {/* Login Form Content below the Blue Gradient */}
           <View style={styles.formContent}>
             {/* Email Input */}
-            <TextInput 
-              style={styles.input} 
-              placeholder="janedoe@mail.com" 
+            <TextInput
+              style={styles.input}
+              placeholder="janedoe@mail.com"
               placeholderTextColor="#FFFFFF"
               value={email}
               onChangeText={setEmail} // Updating email state
@@ -145,11 +164,11 @@ const LoginScreen = ({ navigation }) => {
             />
 
             {/* Password Input */}
-            <TextInput 
-              style={styles.input} 
-              placeholder="Password" 
+            <TextInput
+              style={styles.input}
+              placeholder="Password"
               placeholderTextColor="#FFFFFF"
-              secureTextEntry 
+              secureTextEntry
               value={password}
               onChangeText={setPassword} // Updating password state
             />
@@ -177,7 +196,7 @@ const LoginScreen = ({ navigation }) => {
             {/* Footer */}
             <View style={styles.footerContainer}>
               <Text style={styles.footerText}>Don't have an account?</Text>
-              <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
+              <TouchableOpacity onPress={() => navigation.navigate("Signup")}>
                 <Text style={styles.signUpText}>Sign Up</Text>
               </TouchableOpacity>
             </View>
@@ -194,48 +213,48 @@ const styles = StyleSheet.create({
   },
   container: {
     flexGrow: 1,
-    backgroundColor: '#EDEEF1',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#EDEEF1",
+    alignItems: "center",
+    justifyContent: "center",
   },
   imageContainer: {
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
+    position: "absolute",
+    width: "100%",
+    height: "100%",
+    justifyContent: "center",
+    alignItems: "center",
   },
   womanImage: {
-    width: '100%',
-    height: '100%',  // The woman image covers the whole screen
+    width: "100%",
+    height: "100%", // The woman image covers the whole screen
   },
   formContainer: {
-    marginTop: '69%',
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: '100%',
+    marginTop: "69%",
+    justifyContent: "center",
+    alignItems: "center",
+    width: "100%",
     opacity: 0, // Initially hidden (fade in later)
   },
   blueGradientContainer: {
-    width: '105%',
-    height: '70%',
-    marginTop: '-70%',
+    width: "105%",
+    height: "70%",
+    marginTop: "-70%",
   },
   blueGradientImage: {
-    width: '99%',
-    height: '95%',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginLeft: '0.8%',
+    width: "99%",
+    height: "95%",
+    justifyContent: "center",
+    alignItems: "center",
+    marginLeft: "0.8%",
   },
   p1Content: {
-    alignItems: 'center',
+    alignItems: "center",
   },
   sloganText: {
     fontSize: 20,
-    color: '#ffffff',
-    textAlign: 'center',
-    marginTop: '10%',
+    color: "#ffffff",
+    textAlign: "center",
+    marginTop: "10%",
   },
   logoImage: {
     width: 133,
@@ -243,70 +262,70 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   formContent: {
-    width: '90%',
-    alignItems: 'center',
-    marginTop: '5%',
+    width: "90%",
+    alignItems: "center",
+    marginTop: "5%",
   },
   input: {
     borderBottomWidth: 1,
-    borderColor: '#FFFFFF',
+    borderColor: "#FFFFFF",
     height: 40,
-    width: '100%',
-    color: '#FFFFFF',
+    width: "100%",
+    color: "#FFFFFF",
     paddingHorizontal: 10,
     marginBottom: 15,
-    backgroundColor: 'transparent',
-    fontWeight: '700',
+    backgroundColor: "transparent",
+    fontWeight: "700",
     fontSize: 17,
   },
   forgotPasswordText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 20,
-    marginLeft: '65%',
-    width: '100%',
+    marginLeft: "65%",
+    width: "100%",
     marginBottom: 33,
   },
   signinButton: {
-    backgroundColor: '#E8B93A',
+    backgroundColor: "#E8B93A",
     borderRadius: 25,
     paddingVertical: 15,
     width: 207,
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 20,
   },
   signInText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   orText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 20,
     marginVertical: 17,
   },
   socialIconsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '60%',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "60%",
     marginTop: 10,
   },
   footerContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: '10%',
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: "10%",
   },
   footerText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 20,
     marginRight: 5,
   },
   signUpText: {
-    color: '#FFA500',
+    color: "#FFA500",
     fontSize: 14,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   contentContainerStyle: {
-    backgroundColor: '#C4CCE7',
+    backgroundColor: "#C4CCE7",
   },
 });
 export default LoginScreen;

@@ -24,7 +24,7 @@ router.get("/success", verifyToken, paymentSuccess);
 router.get("/cancel", paymentCancel);
 
 // router.post("/downloadImage", verifyToken, downloadImage);
-router.get("/create-session", verifyToken, createCheckoutSession);
+router.post("/create-session", verifyToken, createCheckoutSession);
 router.get("/checkout-success", downloadImageAfterPayment);
 
 // Route to confirm the payment and download the image

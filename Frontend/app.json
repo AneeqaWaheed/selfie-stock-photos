@@ -18,10 +18,14 @@
         "NSPhotoLibraryUsageDescription": "This app needs access to your photo library to select images."
       }
     },
+    
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#ffffff",
+        "permissions": ["INTERNET",
+      "WRITE_EXTERNAL_STORAGE",
+        "READ_EXTERNAL_STORAGE"]
       }
     },
     "web": {

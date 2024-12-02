@@ -27,13 +27,15 @@ import {
   twitterAuth,
   twitterCallback,
 } from "../controllers/twitterController.js";
+import multer from "multer";
+const upload = multer();
 
 //router object
 const router = express.Router();
 
 //routing
 //REGISTER || METHOD POST
-router.post("/register", registerController);
+router.post("/register", upload.none(), registerController);
 
 //LOGIN || METHOD POST
 router.post("/login", LoginController);

@@ -25,6 +25,7 @@ export const getAllImages = async (req, res) => {
 // Middleware to verify JWT token
 export const verifyToken = (req, res, next) => {
   try {
+    console.log("mdnmsafmabfmdfas", req.header);
     const authHeader = req.header("Authorization");
     if (!authHeader) {
       return res.status(401).json({ message: "Authorization header missing" });
@@ -118,6 +119,7 @@ export const uploadImage = async (req, res) => {
           firebaseURL,
           orientation,
           sizeCategory,
+          filePath: path,
         });
       } catch (error) {
         console.error("Error while saving to DB:", error);
@@ -217,7 +219,7 @@ export const deleteImageById = async (req, res) => {
     }
 
     await Image.findByIdAndDelete(req.params.id);
-
+    await userModel.findByIdAndUpdate(req.userId, { $inc: { photos: 1 } });
     res.status(200).json({ message: "Image deleted successfully" });
   } catch (error) {
     res

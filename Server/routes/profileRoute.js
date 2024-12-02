@@ -3,12 +3,12 @@ import { getUploaderProfileByImageId } from "../controllers/profileController.js
 import multer from "multer";
 import path from "path"; // Import path module
 import {
-  authenticateToken,
   getUserProfile,
   updateProfile,
   updateUserProfile,
   uploadMiddleware,
 } from "../controllers/userController.js";
+import { verifyToken } from "../controllers/ImageController.js";
 const router = express.Router();
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -21,18 +21,17 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 // Route to fetch the user profile
-router.get("/profile", authenticateToken, getUserProfile); // Use the controller function
+router.get("/profile/:username", verifyToken, getUserProfile); // Use the controller function
 
 // Route to update user profile (with optional image upload)
 router.put(
   "/profile",
-  authenticateToken,
+  verifyToken,
   upload.single("profileImage"),
   updateUserProfile
 ); // Use the controller function
 
-// Route to create a payment
-router.get("/image-profile/:imageId", getUploaderProfileByImageId); // Use the controller function
+router.get("/image-profile/:imageId/uploader", getUploaderProfileByImageId); // Use the controller function
 
-router.put("/profile", authenticateToken, uploadMiddleware, updateProfile);
+router.put("/profile", verifyToken, uploadMiddleware, updateProfile);
 export default router;

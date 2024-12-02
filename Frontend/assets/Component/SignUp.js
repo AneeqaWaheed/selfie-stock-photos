@@ -14,12 +14,12 @@ import {
 import { FontAwesome } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as ImagePicker from "expo-image-picker";
-import GoogleSignInButton from "./modules/GoogleSignIn";
-import TwitterLoginButton from "./modules/TwitterSignIn";
+// import GoogleSignInButton from "./modules/GoogleSignIn";
+// import TwitterLoginButton from "./modules/TwitterSignIn";
 
 const SignUpScreen = ({ navigation }) => {
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
+  const [first_name, setfirst_name] = useState("");
+  const [last_name, setlast_name] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [reEnterPassword, setReEnterPassword] = useState("");
@@ -66,8 +66,8 @@ const SignUpScreen = ({ navigation }) => {
 
   const validateFields = () => {
     if (
-      !firstName ||
-      !lastName ||
+      !first_name ||
+      !last_name ||
       !email ||
       !password ||
       !reEnterPassword ||
@@ -98,8 +98,8 @@ const SignUpScreen = ({ navigation }) => {
     await clearPreviousToken();
 
     const formData = new FormData();
-    formData.append("firstName", firstName);
-    formData.append("lastName", lastName);
+    formData.append("first_name", first_name);
+    formData.append("last_name", last_name);
     formData.append("username", username);
     formData.append("email", email);
     formData.append("password", password);
@@ -113,51 +113,70 @@ const SignUpScreen = ({ navigation }) => {
     }
 
     try {
-      const response = await fetch("http://192.168.100.186:5000/api/register", {
-        method: "POST",
-        body: formData,
-      });
+      console.log("mnmsdsdnvmsvsd", formData);
+      const response = await fetch(
+        `https://8505-103-248-222-152.ngrok-free.app/api/v1/auth/register`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
 
       const data = await response.json();
-      if (response.status === 201) {
+      if (response.status === 200 || response.status === 201) {
+        console.log("registered", data, email, password);
         handleLoginAfterRegister(email, password);
       } else {
+        console.log("mdsnms", data.message);
         Alert.alert(
           "Error registering user",
           data.message || "Something went wrong"
         );
       }
     } catch (error) {
-      Alert.alert("Error registering user", error.message);
+      Alert.alert("Error registering user ", error.message);
+      console.log("nbndsbfnsdbfdnsfvsdnbf", error);
     }
   };
 
   const handleLoginAfterRegister = async (email, password) => {
+    if (!email || !password) {
+      Alert.alert("Please enter both email and password");
+      return;
+    }
+
     try {
-      const loginResponse = await fetch(
-        "http://192.168.100.186:5000/api/login",
+      const response = await fetch(
+        `https://8505-103-248-222-152.ngrok-free.app/api/v1/auth/login`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ email, password }),
+          body: JSON.stringify({ email, password }), // Sending email and password to backend
         }
       );
+      // console.log("sandbmasn", response);
+      const data = await response.json(); // Parse JSON response directly
 
-      const loginData = await loginResponse.json();
-      if (loginResponse.status === 200) {
-        await AsyncStorage.setItem("token", loginData.token);
-        Alert.alert("Registration and login successful", "Welcome!");
-        navigation.navigate("MyWork");
+      if (response.status === 200) {
+        // Store the token in AsyncStorage
+        await AsyncStorage.setItem("token", data.token);
+
+        // Store username only if it exists in the "user" object
+        if (data.user && data.user.username) {
+          await AsyncStorage.setItem("username", data.user.username);
+          console.log("Username stored:", data.user.username); // Debug log
+        }
+
+        Alert.alert("Login Successful");
+        navigation.navigate("Homelist");
       } else {
-        Alert.alert(
-          "Login failed",
-          loginData.message || "Something went wrong"
-        );
+        Alert.alert("Login Failed", data.message || "Invalid credentials");
       }
     } catch (error) {
-      Alert.alert("Error logging in user", error.message);
+      console.log("error in logging in", error);
+      Alert.alert("Error logging in", error);
     }
   };
 
@@ -200,12 +219,8 @@ const SignUpScreen = ({ navigation }) => {
           <View style={styles.iconCircle}>
             <FontAwesome name="facebook" size={22} color="#FFFFFF" />
           </View>
-          <View style={styles.iconCircle}>
-            <GoogleSignInButton />
-          </View>
-          <View style={styles.iconCircle}>
-            <TwitterLoginButton />
-          </View>
+          <View style={styles.iconCircle}></View>
+          <View style={styles.iconCircle}></View>
           <View style={styles.iconCircle}>
             <FontAwesome name="instagram" size={22} color="#FFFFFF" />
           </View>
@@ -244,15 +259,15 @@ const SignUpScreen = ({ navigation }) => {
             style={styles.input}
             placeholder="First Name"
             placeholderTextColor="#fff"
-            value={firstName}
-            onChangeText={setFirstName}
+            value={first_name}
+            onChangeText={setfirst_name}
           />
           <TextInput
             style={styles.input}
             placeholder="Last Name"
             placeholderTextColor="#fff"
-            value={lastName}
-            onChangeText={setLastName}
+            value={last_name}
+            onChangeText={setlast_name}
           />
           <TextInput
             style={styles.input}
