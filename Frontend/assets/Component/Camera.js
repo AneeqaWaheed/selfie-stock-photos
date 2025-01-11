@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef, useContext } from "react";
 import {
   View,
@@ -134,7 +135,7 @@ export default function ImageUploadScreen() {
 
     try {
       const response = await axios.post(
-        `https://6780-103-248-222-152.ngrok-free.app/api/images/upload`,
+        `https://7814-103-248-222-155.ngrok-free.app/api/images/upload`,
         formData,
         {
           headers: {
@@ -143,15 +144,17 @@ export default function ImageUploadScreen() {
           },
         }
       );
+      
 
       if (response.status === 200) {
         const newImage = {
-          ...response.data, // Assuming response contains the new image data
-          imageUrl: `https://6780-103-248-222-152.ngrok-free.app/${response.data.filePath.replace(
+          ...response.data,
+          imageUrl: `https://7814-103-248-222-155.ngrok-free.app/${response.data.filePath.replace(
             /\\/g,
             "/"
           )}`,
         };
+        
         console.log("response", response.data);
         setImages((prevImages) => [...prevImages, response.data]);
         Alert.alert("Upload successful!", response.data.message);

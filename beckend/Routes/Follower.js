@@ -60,3 +60,4 @@ router.post('/follow/:userId', authenticateToken, async (req, res) => {
   });
 
 module.exports = router;
+
