@@ -115,7 +115,7 @@ const SignUpScreen = ({ navigation }) => {
     try {
       console.log("mnmsdsdnvmsvsd", formData);
       const response = await fetch(
-        `https://8505-103-248-222-152.ngrok-free.app/api/v1/auth/register`,
+        `https://6780-103-248-222-152.ngrok-free.app/api/v1/auth/register`,
         {
           method: "POST",
           body: formData,
@@ -147,7 +147,7 @@ const SignUpScreen = ({ navigation }) => {
 
     try {
       const response = await fetch(
-        `https://8505-103-248-222-152.ngrok-free.app/api/v1/auth/login`,
+        `https://6780-103-248-222-152.ngrok-free.app/api/v1/auth/login`,
         {
           method: "POST",
           headers: {

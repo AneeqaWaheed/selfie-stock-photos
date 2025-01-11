@@ -22,7 +22,7 @@ const AllImagesScreen = () => {
     try {
       const token = await AsyncStorage.getItem("token"); // Get auth token
       const response = await axios.get(
-        `https://8505-103-248-222-152.ngrok-free.app/api/images/all-images`,
+        `https://6780-103-248-222-152.ngrok-free.app/api/images/all-images`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

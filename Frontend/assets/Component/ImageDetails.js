@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   View,
   Image,
@@ -15,60 +15,104 @@ import * as FileSystem from "expo-file-system";
 import * as WebBrowser from "expo-web-browser";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import jwtDecode from "jwt-decode";
+import { ImagesContext } from "./context/imageContext";
 const ImageDetailsScreen = ({ route, navigation }) => {
   const { image } = route.params; // Get the image data passed from HomeScreen
-  const [uploader, setUploader] = useState(null); // State to hold uploader profile data
-  const [isFollowing, setIsFollowing] = useState(false); // State for following status
+
+  // const [isFollowing, setIsFollowing] = useState(false); // State for following status
   const [followerCount, setFollowerCount] = useState(0); // State for follower count
   const [modalVisible, setModalVisible] = useState(false); // State for modal visibility
   const [selectedSize, setSelectedSize] = useState(null); // State to hold the selected image size
-  const [loading, setLoading] = useState(false);
+  // const [loading, setLoading] = useState(false);
+  const {
+    profile,
+    fetchImageProfile,
+    profileLoading,
+    profileError,
+    isFollowing,
+
+    setIsFollowing,
+  } = useContext(ImagesContext);
   console.log("imnmfsa", jwtDecode);
   // Function to fetch uploader profile data
-  const fetchUploaderProfile = async (imageId) => {
-    setLoading(true);
-    try {
-      const response = await axios.get(
-        `https://8505-103-248-222-152.ngrok-free.app/api/profile/image-profile/${imageId}/uploader`
-      ); // Call your image profile API
-      console.log("Fetched Profile nmbsdmfnb:", response.data);
-      setUploader(response.data); // Set the uploader state
-    } catch (error) {
-      console.error("Error fetching profile:", error);
-      Alert.alert("Error fetching profile data");
-    } finally {
-      setLoading(false); // Stop loading
-    }
-  };
+  // const fetchUploaderProfile = async (imageId) => {
+  //   setLoading(true);
+  //   try {
+  //     const token = await AsyncStorage.getItem("token");
+  //     const decodedToken = jwtDecode(token);
+  //     const userId = decodedToken._id;
+
+  //     // Fetch uploader profile
+  //     const profileResponse = await axios.get(
+  //       `https://6780-103-248-222-152.ngrok-free.app/api/profile/image-profile/${imageId}/uploader`
+  //     );
+  //     setUploader(profileResponse.data);
+
+  //     // Fetch follow status
+  //     const statusResponse = await axios.get(
+  //       `https://6780-103-248-222-152.ngrok-free.app/api/followers/followers/status/${profileResponse.data._id}`,
+  //       {
+  //         params: { userId },
+  //         headers: {
+  //           Authorization: `Bearer ${token}`,
+  //         },
+  //       }
+  //     );
+  //     setIsFollowing(statusResponse.data.isFollowing);
+  //   } catch (error) {
+  //     console.error("Error fetching profile or follow status:", error);
+  //     Alert.alert("Error fetching profile data");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   // Function to handle follow/unfollow
   const handleFollow = async () => {
     const token = await AsyncStorage.getItem("token");
-
-    const decodedToken = jwtDecode(token); // Decode JWT to get the payload
+    const decodedToken = jwtDecode(token);
     const userId = decodedToken._id;
-    const targetUserId = uploader._id; // Assuming uploader has an _id field
-    console.log(token, targetUserId, userId);
-
-    try {
-      const response = await axios.post(
-        `https://8505-103-248-222-152.ngrok-free.app/api/followers/follow/${targetUserId}`,
-        { userId: userId },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+    const targetUserId = profile._id;
+    if (isFollowing) {
+      try {
+        const response = await axios.post(
+          `https://6780-103-248-222-152.ngrok-free.app/api/followers/unfollow/${targetUserId}`,
+          { userId },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        if (response.status === 200) {
+          setIsFollowing(false); // Toggle following state
+          // setFollowerCount(isFollowing ? followerCount - 1 : followerCount + 1); // Update follower count
+          Alert.alert("Success", response.data.message);
         }
-      );
-
-      if (response.status === 200) {
-        setIsFollowing(!isFollowing); // Toggle following status
-        setFollowerCount(isFollowing ? followerCount - 1 : followerCount + 1); // Update follower count
-        Alert.alert("Success", response.data.message);
+      } catch (error) {
+        console.log(error);
       }
-    } catch (error) {
-      console.error("Error following user:", error);
-      Alert.alert("Error", "Could not follow/unfollow user");
+    } else {
+      try {
+        const response = await axios.post(
+          `https://6780-103-248-222-152.ngrok-free.app/api/followers/follow/${targetUserId}`,
+          { userId },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (response.status === 200) {
+          setIsFollowing(!isFollowing); // Toggle following state
+          setFollowerCount(isFollowing ? followerCount - 1 : followerCount + 1); // Update follower count
+          Alert.alert("Success", response.data.message);
+        }
+      } catch (error) {
+        console.error("Error following/unfollowing user:", error);
+        Alert.alert("Error", "Could not follow/unfollow user");
+      }
     }
   };
 
@@ -78,18 +122,23 @@ const ImageDetailsScreen = ({ route, navigation }) => {
     setSelectedSize(size); // Set the selected size
     setModalVisible(true);
   };
-  const createCheckoutSession = (size) => {
+  const createCheckoutSession = async (size) => {
+    const userId = profile._id;
     navigation.navigate("PaymentScreen", {
       image,
       filename: image.filename,
       size,
+
+      userId: userId,
+      title: "This image was downloaded",
+      imageId: image._id,
     });
   };
 
   useEffect(() => {
-    fetchUploaderProfile(image._id); // Fetch uploader profile data on component mount
+    fetchImageProfile(image._id); // Fetch uploader profile data on component mount
   }, [image]);
-  if (loading) {
+  if (profileLoading) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#FFCC00" />
@@ -97,19 +146,19 @@ const ImageDetailsScreen = ({ route, navigation }) => {
       </View>
     );
   }
-  if (!uploader) return <Text>Loading...</Text>; // Loading state while fetching
+  if (!profile) return <Text>Loading...</Text>; // Loading state while fetching
 
   return (
     <View style={styles.container}>
       {/* User profile section */}
       <View style={styles.profileContainer}>
         <Image
-          source={{ uri: uploader.profileImage }}
+          source={{ uri: profile.profileImage }}
           style={styles.profileImage}
         />
         <View style={styles.profileTextContainer}>
-          <Text style={styles.username}>{uploader.username}</Text>
-          <Text style={styles.bio}>{uploader.bio}</Text>
+          <Text style={styles.username}>{profile.username}</Text>
+          <Text style={styles.bio}>{profile.bio}</Text>
         </View>
         <TouchableOpacity style={styles.followButton} onPress={handleFollow}>
           <Text style={styles.followButtonText}>
@@ -121,7 +170,7 @@ const ImageDetailsScreen = ({ route, navigation }) => {
       {/* Image section */}
       <Image
         source={{
-          uri: `https://8505-103-248-222-152.ngrok-free.app/${image.filePath.replace(
+          uri: `https://6780-103-248-222-152.ngrok-free.app/${image.filePath.replace(
             /\\/g,
             "/"
           )}`,

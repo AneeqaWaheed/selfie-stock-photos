@@ -32,6 +32,24 @@ export const followUser = async (req, res) => {
   }
 };
 
+export const getFollowingStatus = async (req, res) => {
+  try {
+    const { targetUserId } = req.params;
+    const { userId } = req.query;
+
+    // Find the user making the request
+    const user = await userModel.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // Check if the user is following the target user
+    const isFollowing = user.following.includes(targetUserId);
+
+    res.status(200).json({ isFollowing });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 // Unfollow a user
 export const unfollowUser = async (req, res) => {
   try {

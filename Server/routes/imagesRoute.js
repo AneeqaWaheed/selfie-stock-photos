@@ -22,7 +22,7 @@ const storage = multer.diskStorage({
     cb(null, "uploads/"); // Ensure this directory exists or create it
   },
   filename: function (req, file, cb) {
-    cb(null, Date.now() + path.extname(file.originalname)); // Unique filenames based on timestamp
+    cb(null, file.originalname); // Unique filenames based on timestamp
   },
 });
 

@@ -2,7 +2,8 @@ import UserModel from "../models/userModel.js";
 import admin from "firebase-admin";
 import multer from "multer";
 import path from "path";
-import serviceAccount from "../selfi-stock-firebase-adminsdk.json" assert { type: "json" };
+import serviceAccount from "../burgershop-2975b-firebase-adminsdk-myiuo-b24382f144.json" assert { type: "json" };
+import userModel from "../models/userModel.js";
 
 // // const serviceAccount = require("../path/to/serviceAccountKey.json");
 // admin.initializeApp({
@@ -144,6 +145,27 @@ export const updateProfile = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+// export const savePushToken = async (req, res) => {
+//   const { userId, expoPushToken } = req.body;
+
+//   try {
+//     // Find the user by ID and update the Expo push token
+//     const user = await userModel.findById(userId);
+//     if (!user) {
+//       return res.status(404).json({ error: "User not found" });
+//     }
+
+//     // Update the user's Expo push token
+//     user.expoPushToken = expoPushToken;
+//     await user.save(); // Save the changes to the database
+
+//     res.status(200).json({ message: "Push token saved successfully" });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: "Failed to save push token" });
+//   }
+// };
 
 // Export multer middleware for use in routes
 export const uploadMiddleware = upload.single("profileImage");

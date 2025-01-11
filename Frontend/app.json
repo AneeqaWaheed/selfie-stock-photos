@@ -2,6 +2,7 @@
   "expo": {
     "name": "ayesha",
     "slug": "ayesha",
+    "scheme": "ayesha",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -13,13 +14,18 @@
     },
     "ios": {
       "supportsTablet": true,
+      "googleServicesFile": "./assets/Component/config/GoogleService-Info.plist",
       "infoPlist": {
         "NSCameraUsageDescription": "This app uses the camera to take photos.",
         "NSPhotoLibraryUsageDescription": "This app needs access to your photo library to select images."
       }
     },
-    
+    "facebookAppId": "1630716490870178",
+    "facebookDisplayName": "selfi_stock",
+    "facebookScheme": "1630716490870178",
     "android": {
+      "package": "selfi.stock45",
+      "googleServicesFile": "./assets/Component/config/google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff",
@@ -33,6 +39,15 @@
     },
     "plugins": [
       "expo-font"
-    ]
+    ],
+    "notification": {
+      "iosDisplayInForeground": true
+    },
+    "platforms": ["ios", "android"],
+   
+    "expo-firebase-messaging": {
+      "googleServicesFile": "./assets/Component/config/google-services.json"
+    }
   }
+  
 }

@@ -7,27 +7,14 @@ import {
   delUser,
   forgotPassword,
   resetPassword,
+  verifyOTP,
 } from "../controllers/authController.js";
 import { requireSignIn } from "../middlewares/authMiddleware.js";
-import passport from "../config/passport.js";
-import "../config/google/passport.js";
-import "../config/facebook/passport.js"; // Import passport config
-import "../config/instagram/passport.js";
-import "../config/twitter/passport.js";
-import { googleAuth, googleCallback } from "../controllers/googleController.js";
-import {
-  facebookAuth,
-  facebookCallback,
-} from "../controllers/facebookAuthController.js";
-import {
-  instagramAuth,
-  instagramCallback,
-} from "../controllers/instagramAuthController.js";
-import {
-  twitterAuth,
-  twitterCallback,
-} from "../controllers/twitterController.js";
+
 import multer from "multer";
+import { googleAuth } from "../controllers/GoogleSignIn.js";
+import { facebookAuth } from "../controllers/facebookAuthController.js";
+
 const upload = multer();
 
 //router object
@@ -54,22 +41,12 @@ router.get("/users", allUsers);
 router.delete("/delUser/:id", delUser);
 //forgot password
 router.post("/forgot-password", forgotPassword);
-router.post("/reset/:token", resetPassword);
+router.post("/verify-otp", verifyOTP);
+router.post("/reset-password", resetPassword);
 
 // Google Auth Routes
-router.get("/google", googleAuth); // Initiates Google authentication
-router.get("/google/callback", googleCallback); // Handles Google callback
+router.post("/google-signin", googleAuth);
 
-// Facebook Auth Routes
-router.get("/facebook", facebookAuth); // Initiates Facebook authentication
-router.get("/facebook/callback", facebookCallback); // Handles Facebook callback
-
-// Instagram Auth Routes
-router.get("/instagram", instagramAuth); // Initiates Instagram authentication
-router.get("/instagram/callback", instagramCallback); // Handles Instagram callback
-
-// Twitter Auth Routes
-router.get("/twitter", twitterAuth); // Initiates Twitter authentication
-router.get("/twitter/callback", twitterCallback); // Handles Twitter callback
+router.post("/facebook", facebookAuth);
 
 export default router;

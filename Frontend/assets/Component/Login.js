@@ -16,6 +16,8 @@ import {
 } from "react-native";
 import { FontAwesome } from "@expo/vector-icons"; // For social icons
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import GoogleSignInButton, { googleSignIn } from "./modules/GoogleSignIn";
+import { handleFacebookLogin } from "./modules/facebook";
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
@@ -72,7 +74,7 @@ const LoginScreen = ({ navigation }) => {
 
     try {
       const response = await fetch(
-        `https://8505-103-248-222-152.ngrok-free.app/api/v1/auth/login`,
+        `https://6780-103-248-222-152.ngrok-free.app/api/v1/auth/login`,
         {
           method: "POST",
           headers: {
@@ -102,6 +104,19 @@ const LoginScreen = ({ navigation }) => {
     } catch (error) {
       console.log("error in logging in", error);
       Alert.alert("Error logging in", error);
+    }
+  };
+  const handleForgotPassword = async () => {
+    navigation.navigate("ForgotPassword");
+  };
+
+  const handleSignIn = (idToken) => {
+    console.log("Google ID Token:", idToken); // You can send this to your backend for verification
+  };
+  const handleFacebook = async () => {
+    const user = await handleFacebookLogin();
+    if (user) {
+      console.log("User logged in on another screen:", user);
     }
   };
 
@@ -174,7 +189,7 @@ const LoginScreen = ({ navigation }) => {
             />
 
             {/* Forgot Password */}
-            <TouchableOpacity>
+            <TouchableOpacity onPress={handleForgotPassword}>
               <Text style={styles.forgotPasswordText}>Forgot password?</Text>
             </TouchableOpacity>
 
@@ -187,8 +202,13 @@ const LoginScreen = ({ navigation }) => {
 
             {/* Social Icons */}
             <View style={styles.socialIconsContainer}>
-              <FontAwesome name="google" size={32} color="#ffff" />
-              <FontAwesome name="facebook" size={32} color="#ffff" />
+              <View>
+                <GoogleSignInButton onSignIn={handleSignIn} />
+              </View>
+              {/* <FontAwesome name="google" size={32} color="#ffff" /> */}
+              <TouchableOpacity onPress={handleFacebook}>
+                <FontAwesome name="facebook" size={32} color="#ffff" />
+              </TouchableOpacity>
               <FontAwesome name="twitter" size={32} color="#ffff" />
               <FontAwesome name="instagram" size={32} color="#ffff" />
             </View>

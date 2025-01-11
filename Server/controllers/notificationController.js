@@ -1,20 +1,33 @@
-import axios from "axios";
-import sendPushNotification from "../helpers/sendPushNotifiation.js";
-// Controller function for purchase route
-export const handlePurchase = async (req, res) => {
-  const { sellerToken, imageId } = req.body;
+import { NotificationModel } from "../models/notification.js";
+export const saveNotification = async (userId, title, imageId) => {
+  try {
+    const notification = new NotificationModel({
+      userId,
+      title,
+      body: imageId, // Reference the image using ObjectId
+    });
+
+    await notification.save();
+    console.log("Notification saved successfully.");
+    return notification;
+  } catch (error) {
+    console.error("Error saving notification:", error.message);
+    throw new Error("Failed to save notification.");
+  }
+};
+
+// Fetch all notifications for a user
+export const getNotificationsByUser = async (req, res) => {
+  const { userId } = req.params;
 
   try {
-    // Notify the seller about the purchase
-    await sendPushNotification(
-      sellerToken,
-      `Your image with ID ${imageId} has been purchased!`
-    );
+    const notifications = await NotificationModel.find({ userId })
+      .populate("body") // Populate the Image details if needed
+      .sort({ date: -1 });
 
-    // Send response back to the client
-    res.status(200).json({ message: "Purchase successful!" });
+    res.status(200).json(notifications);
   } catch (error) {
-    console.error("Error handling purchase:", error);
-    res.status(500).json({ message: "An error occurred during the purchase." });
+    console.error("Error fetching notifications:", error.message);
+    res.status(500).json({ error: "Failed to fetch notifications." });
   }
 };

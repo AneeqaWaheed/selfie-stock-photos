@@ -28,7 +28,7 @@ const userSchema = new mongoose.Schema(
       sparse: true, // Allow null values if necessary
     },
     provider: { type: String },
-    resetPasswordToken: String,
+    resetPasswordOTP: String,
     resetPasswordExpires: Date,
     followers: [
       {
@@ -44,6 +44,7 @@ const userSchema = new mongoose.Schema(
         default: [],
       },
     ],
+    expoPushToken: { type: String, default: null },
     photos: { type: Number, default: 0 },
     downloads: { type: Number, default: 0 },
   },

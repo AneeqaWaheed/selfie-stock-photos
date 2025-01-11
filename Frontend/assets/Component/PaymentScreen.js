@@ -14,7 +14,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as MediaLibrary from "expo-media-library";
 import * as FileSystem from "expo-file-system";
 const PaymentScreen = ({ route, navigation }) => {
-  const { filename, size, image } = route.params; // Receive details from ImageDetailsScreen
+  const { filename, size, image, userId, title, imageId } = route.params; // Receive details from ImageDetailsScreen
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
@@ -28,7 +28,7 @@ const PaymentScreen = ({ route, navigation }) => {
         const token = await AsyncStorage.getItem("token");
 
         const response = await axios.post(
-          `https://8505-103-248-222-152.ngrok-free.app/api/payment/create-session?filename=${filename}`,
+          `https://6780-103-248-222-152.ngrok-free.app/api/payment/create-session?filename=${filename}`,
 
           {
             params: { filename },
@@ -89,15 +89,20 @@ const PaymentScreen = ({ route, navigation }) => {
         // Fetch the download URL from your backend
         const token = await AsyncStorage.getItem("token");
         const response = await axios.get(
-          `https://8505-103-248-222-152.ngrok-free.app/api/payment/checkout-success?filename=${filename}`,
+          `https://6780-103-248-222-152.ngrok-free.app/api/payment/checkout-success?filename=${filename}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
-
-        if (response.data.firebaseURL) {
+        console.log("mnmnsdmnmdsnafbdmsanf", response.data);
+        if (response.data && response.data.firebaseURL) {
           // Automatically download the image
-          await downloadImage(response.data.firebaseURL);
+          await downloadImage(
+            response.data.firebaseURL,
+            userId,
+            title,
+            imageId
+          );
         } else {
           Alert.alert("Error", "Image download failed.");
         }
@@ -106,12 +111,12 @@ const PaymentScreen = ({ route, navigation }) => {
         Alert.alert("Error", "Failed to fetch the image URL.");
       }
 
-      navigation.goBack(); // Navigate back to the previous screen
+      // navigation.goBack(); // Navigate back to the previous screen
     }
   };
 
   // Download Image Functionality
-  const downloadImage = async (imageUrl) => {
+  const downloadImage = async (imageUrl, userId, title, imageId) => {
     try {
       const hasPermission = await MediaLibrary.requestPermissionsAsync();
       if (hasPermission.status !== "granted") {
@@ -127,6 +132,29 @@ const PaymentScreen = ({ route, navigation }) => {
 
       const asset = await MediaLibrary.createAssetAsync(downloadedFile.uri);
       await MediaLibrary.createAlbumAsync("Downloaded Images", asset, false);
+
+      // Step 5: Send a request to the backend to save the notification
+      const response = await fetch(
+        "https://6780-103-248-222-152.ngrok-free.app/api/notification/send-notifications",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userId, // User ID to receive the notification
+            title, // Title of the notification
+            imageId, // Image ID (ObjectId of the image)
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to send notification");
+      }
+
+      const data = await response.json();
+      console.log("Notification saved:", data);
 
       Alert.alert("Success", "Image downloaded to your gallery!");
     } catch (error) {

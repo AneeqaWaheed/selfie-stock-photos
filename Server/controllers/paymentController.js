@@ -268,14 +268,8 @@ export const createCheckoutSession = async (req, res) => {
 export const downloadImageAfterPayment = async (req, res) => {
   try {
     const { filename, width, height } = req.query;
-
-    const localFilePath = path.join(
-      __dirname,
-      "..",
-      "uploads",
-      "userPosts",
-      filename
-    );
+    console.log("mngamgbn", filename, width, height);
+    const localFilePath = path.join(__dirname, "..", "uploads", filename);
 
     if (!fs.existsSync(localFilePath)) {
       console.error(`File not found at: ${localFilePath}`);
@@ -300,7 +294,7 @@ export const downloadImageAfterPayment = async (req, res) => {
     const transformedImage = await transformer.toBuffer();
 
     const firebaseFileName = `${filename}`;
-    const file = bucket.file(`uploads/userPosts/${firebaseFileName}`);
+    const file = bucket.file(`uploads/${firebaseFileName}`);
     const stream = file.createWriteStream({
       metadata: { contentType: "image/jpeg" },
     });

@@ -10,6 +10,7 @@ import paymentRoutes from "./routes/paymentRoutes.js";
 import imagesRoute from "./routes/imagesRoute.js";
 import profileRoute from "./routes/profileRoute.js";
 import followroute from "./routes/followroute.js";
+import notificationRoute from "./routes/notificationRoute.js";
 import paypal from "paypal-rest-sdk";
 // import { initializePassport } from "./config/google/passport.js";
 import cookieParser from "cookie-parser";
@@ -54,6 +55,7 @@ app.use("/api/v1/auth", authroute);
 app.use("/api/payment", paymentRoutes);
 app.use("/api/images", imagesRoute);
 app.use("/api/profile", profileRoute);
+app.use("/api/notification", notificationRoute);
 app.use("/api/followers", followroute);
 app.use(cors());
 //rest api

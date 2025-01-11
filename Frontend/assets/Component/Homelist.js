@@ -21,8 +21,17 @@ import debounce from "lodash.debounce";
 const HomeScreen = () => {
   const navigation = useNavigation();
 
-  const { images, loading, setImages, error, fetchImages } =
-    useContext(ImagesContext);
+  const {
+    images,
+    loading,
+    setImages,
+    error,
+    fetchImages,
+    fetchImageProfile,
+    profile,
+    profileLoading,
+    profileError,
+  } = useContext(ImagesContext);
   const [numColumns, setNumColumns] = useState(2);
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -55,22 +64,24 @@ const HomeScreen = () => {
   }, [searchQuery]);
 
   // Fetch uploader profile by image ID
-  const fetchImageProfile = async (imageId) => {
-    try {
-      const response = await axios.get(
-        `https://8505-103-248-222-152.ngrok-free.app/api/profile/image-profile/${imageId}/uploader`
-      );
-      console.log("Fetched Profile:", response.data);
-      return response.data; // Return the profile data
-    } catch (error) {
-      console.error("Error fetching profile:", error);
-      Alert.alert("Error fetching profile");
-      return null; // Return null if there's an error
-    }
-  };
+  // const fetchImageProfile = async (imageId) => {
+  //   console.log("imageId", imageId);
+  //   try {
+  //     const response = await axios.get(
+  //       `https://2e1b-103-248-222-152.ngrok-free.app/api/profile/image-profile/${imageId}/uploader`
+  //     );
+  //     console.log("Fetched Profile:", response.data);
+  //     return response.data; // Return the profile data
+  //   } catch (error) {
+  //     console.error("Error fetching profile:", error);
+  //     Alert.alert("Error fetching profile dnfbsadmnfa");
+  //     return null; // Return null if there's an error
+  //   }
+  // };
 
-  const handleImagePress = async (image) => {
-    const profile = await fetchImageProfile(image._id); // Fetch uploader's profile
+  const handleImagePress = (image) => {
+    console.log("image", image);
+    fetchImageProfile(image._id); // Fetch uploader's profile
     if (profile) {
       navigation.navigate("ImageDetails", {
         image: image, // Pass image details
@@ -163,7 +174,7 @@ const HomeScreen = () => {
               <View>
                 <Image
                   source={{
-                    uri: `https://8505-103-248-222-152.ngrok-free.app/${item.filePath.replace(
+                    uri: `https://6780-103-248-222-152.ngrok-free.app/${item.filePath.replace(
                       /\\/g,
                       "/"
                     )}`,

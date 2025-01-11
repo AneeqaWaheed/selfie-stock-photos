@@ -25,7 +25,7 @@ export default function ProfileUpdate() {
     try {
       const token = await AsyncStorage.getItem("token"); // Get auth token
       const response = await axios.put(
-        `https://8505-103-248-222-152.ngrok-free.app/api/profile/profile`,
+        `https://6780-103-248-222-152.ngrok-free.app/api/profile/profile`,
         formData,
         {
           headers: {

@@ -134,7 +134,7 @@ export default function ImageUploadScreen() {
 
     try {
       const response = await axios.post(
-        `https://8505-103-248-222-152.ngrok-free.app/api/images/upload`,
+        `https://6780-103-248-222-152.ngrok-free.app/api/images/upload`,
         formData,
         {
           headers: {
@@ -147,7 +147,7 @@ export default function ImageUploadScreen() {
       if (response.status === 200) {
         const newImage = {
           ...response.data, // Assuming response contains the new image data
-          imageUrl: `https://8505-103-248-222-152.ngrok-free.app/${response.data.filePath.replace(
+          imageUrl: `https://6780-103-248-222-152.ngrok-free.app/${response.data.filePath.replace(
             /\\/g,
             "/"
           )}`,

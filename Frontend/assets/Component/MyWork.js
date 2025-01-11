@@ -36,7 +36,7 @@ const MyWorksScreen = ({ navigation }) => {
         if (username) {
           // Make API call to get the user profile
           const response = await axios.get(
-            `https://8505-103-248-222-152.ngrok-free.app/api/profile/profile/${username}`,
+            `https://6780-103-248-222-152.ngrok-free.app/api/profile/profile/${username}`,
             {
               headers: {
                 Authorization: `Bearer ${token}`,
@@ -65,7 +65,7 @@ const MyWorksScreen = ({ navigation }) => {
     try {
       const token = await AsyncStorage.getItem("token");
       const response = await axios.get(
-        `https://8505-103-248-222-152.ngrok-free.app/api/images/user-images`,
+        `https://6780-103-248-222-152.ngrok-free.app/api/images/user-images`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -75,7 +75,7 @@ const MyWorksScreen = ({ navigation }) => {
       );
       const images = response.data.map((item) => ({
         ...item,
-        imageUrl: `https://8505-103-248-222-152.ngrok-free.app/${item.filePath.replace(
+        imageUrl: `https://6780-103-248-222-152.ngrok-free.app/${item.filePath.replace(
           "\\",
           "/"
         )}`, // Replace `\` with `/` for valid URLs
@@ -131,7 +131,7 @@ const MyWorksScreen = ({ navigation }) => {
     try {
       const token = await AsyncStorage.getItem("token"); // Get auth token
       const response = await axios.put(
-        `https://8505-103-248-222-152.ngrok-free.app/api/profile/profile`,
+        `https://6780-103-248-222-152.ngrok-free.app/api/profile/profile`,
         formData,
         {
           headers: {

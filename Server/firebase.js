@@ -1,11 +1,21 @@
 import admin from "firebase-admin";
-import serviceAccount from "./config/selfi-stock-firebase-adminsdk.json" assert { type: "json" };
+import serviceAccount from "./config/burgershop-2975b-firebase-adminsdk-myiuo-b24382f144.json" assert { type: "json" };
 
 // Initialize Firebase admin SDK
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  storageBucket: "selfi-stock.appspot.com", // Directly use the bucket name
+  storageBucket: "burgershop-2975b.appspot.com", // Directly use the bucket name
 });
 
 const bucket = admin.storage().bucket(); // This gives you the storage bucket
+const verifyToken = async (idToken) => {
+  try {
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    return decodedToken;
+  } catch (error) {
+    throw new Error("Invalid token");
+  }
+};
+
+export { verifyToken };
 export default bucket;
