@@ -36,3 +36,4 @@ const ImageSchema = new mongoose.Schema({
 });
 
 export default mongoose.model("Image", ImageSchema);
+export default mongoose.model("Image", ImageSchema);

@@ -20,7 +20,9 @@ import { fileURLToPath } from "url";
 // config env
 dotenv.config();
 console.log("dmsfbsmdnfbsdm", process.env.GOOGLE_CLIENT_ID);
+console.log("dmsfbsmdnfbsdm", process.env.GOOGLE_CLIENT_ID);
 
+console.log(process.env.GOOGLE_CLIENT_ID);
 console.log(process.env.GOOGLE_CLIENT_ID);
 //database config
 connectDB();
